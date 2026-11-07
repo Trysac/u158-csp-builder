@@ -1,55 +1,40 @@
-# csp-builder
+# @trysac/csp-builder
 
-[![npm version](https://img.shields.io/npm/v/@trysac/csp-builder.svg)](https://www.npmjs.com/package/@trysac/csp-builder)
-[![license: MIT](https://img.shields.io/npm/l/@trysac/csp-builder.svg)](LICENSE)
-[![CI](https://github.com/Trysac/u158-csp-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/Trysac/u158-csp-builder/actions/workflows/ci.yml)
+Content-Security-Policy headers are built by string concatenation, so a misquoted 'self', a stray semicolon or an unvalidated host from config silently weakens or breaks the policy. Violation reports arrive in two different formats and are easy to parse unsafely. This library serialises a typed policy deterministically, rejects invalid sources, adds nonces, and normalises both report formats with size limits.
 
-Build Content-Security-Policy headers from a typed policy with source validation, nonces and a strict preset, and parse CSP violation reports in both formats
+## Installation
 
-## Problem
-
-Describe in two or three sentences the concrete problem this utility solves, who hits it, and why existing
-packages do not solve it well. Keep it factual; link to an issue or decision record when there is one.
-
-## Install
-
-```sh
+```bash
 npm install @trysac/csp-builder
 ```
 
-Requires Node.js 20 or newer. The package ships ES modules with TypeScript declarations.
-
-## Usage
+## Usage Example
 
 ```ts
-import { greet } from "@trysac/csp-builder";
+import { buildCsp, strictPolicy, generateNonce } from "@trysac/csp-builder";
 
-// Build a greeting; surrounding whitespace is ignored.
-const message = greet("  Ada ");
-console.log(message); // "Hello, Ada!"
-
-try {
-  greet("   ");
-} catch (error) {
-  console.error((error as Error).message); // "name must not be empty"
-}
+const nonce = generateNonce();
+const header = buildCsp(strictPolicy(), { nonce });
+// => "script-src 'nonce-...' 'strict-dynamic' https: 'unsafe-inline'; object-src 'none'; base-uri 'none'"
 ```
 
-## API
+## Public API
 
-| Export | Signature | Description |
-|---|---|---|
-| `greet` | `(name: string) => string` | Placeholder API; replace it with the real one. |
+- `buildCsp(policy: CspPolicy, opts?: { nonce?: string }): string`: Serializes a structured CSP object into a standard header string, enforcing canonical order and strict source-list validation.
+- `strictPolicy(opts?: { reportTo?: string }): CspPolicy`: Returns a preset policy using 'strict-dynamic' with legacy browser fallbacks.
+- `generateNonce(randomBytes?: (n: number) => Uint8Array): string`: Creates a cryptographically secure 16-byte base64 nonce.
+- `reportingEndpoints(endpoints: Record<string, string>): string`: Builds a compliant `Reporting-Endpoints` header value.
+- `parseCspReport(body: string, contentType: string, opts?: { maxBytes?: number }): CspViolation[]`: Parses and normalizes incoming violation reports, handling both legacy `application/csp-report` and modern `application/reports+json` payloads.
 
-## Development
+### Errors & Limits
 
-```sh
-npm install
-npm run check   # lint, format, types, tests with coverage, docs, secrets
-```
+- Throws `CspError` with code `'unknown_directive'`, `'invalid_source'`, `'unquoted_keyword'`, `'invalid_nonce'`, `'invalid_endpoint'`, `'report_too_large'`, or `'invalid_report'`.
+- Violation reports are limited to 65,536 bytes by default and capped at 100 entries per batch.
 
-See [AGENTS.md](AGENTS.md) for the full command list and [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow.
+## Why not Helmet?
 
-## License
+`@trysac/csp-builder` is framework-free, validates every source expression against the CSP3 grammar, enforces canonical output, and provides a safe parser for violation reports, whereas general-purpose frameworks often rely on loose string concatenation.
 
-[MIT](LICENSE) © 2026 Miguel Gomez
+## Security
+
+See [docs/SECURITY.md](docs/SECURITY.md) for the threat model and limits.

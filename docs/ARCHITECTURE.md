@@ -1,30 +1,12 @@
 # Architecture
 
-## Overview
-
-`@trysac/csp-builder` is a small, dependency-free TypeScript library published to npm as ES modules with type
-declarations. Build Content-Security-Policy headers from a typed policy with source validation, nonces and a strict preset, and parse CSP violation reports in both formats
+`@trysac/csp-builder` is structured as a zero-dependency, modular TypeScript library providing declarative CSP building and violation report ingestion.
 
 ## Modules
 
-| Module | Responsibility |
-|---|---|
-| `src/index.ts` | Public API. Everything consumers import is exported from here. |
-
-Add a row when you add a module. Internal modules are not re-exported unless they are part of the public API.
-
-## Boundaries
-
-- No runtime dependencies by default; any addition is justified in [STACK.md](STACK.md).
-- No I/O at import time. Functions are pure unless their documentation says otherwise.
-- Errors are thrown as built-in error types (`TypeError`, `RangeError`) with actionable messages.
-
-## Build and distribution
-
-`npm run build` compiles `src/` to `dist/` with `tsconfig.build.json`. Only `dist/` is published
-(`files` in `package.json`).
-
-## Decisions
-
-Architectural decisions are recorded in [decisions/](decisions/), starting with
-[0001](decisions/0001-record-architecture-decisions.md).
+- `src/errors.ts`: Unified error model defining `CspError` and machine-readable `CspErrorCode` values.
+- `src/nonce.ts`: Cryptographic nonce generation using standard web crypto (`globalThis.crypto.getRandomValues`) with custom RNG injection.
+- `src/sources.ts`: CSP Level 3 source-list grammar validation, detecting injection attempts, unquoted keywords, and malformed hosts.
+- `src/policy.ts`: Canonical ordering, deduplication, and serialization of directives into HTTP header strings.
+- `src/endpoints.ts`: Parsing and formatting for the `Reporting-Endpoints` header.
+- `src/reports.ts`: Ingestion of `application/csp-report` (CSP2) and `application/reports+json` (Reporting API) payloads, enforcing field length limits and prototype neutrality (`Object.create(null)`).

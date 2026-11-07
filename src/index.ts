@@ -1,20 +1,24 @@
 /**
- * Public entry point of @trysac/csp-builder.
+ * Public entry point for `@trysac/csp-builder`.
  *
- * Replace this placeholder with the utility's real API. Keep every export documented and covered by tests.
+ * Deterministic Content-Security-Policy builder with strict presets,
+ * source validation, nonce generation, and dual-format report parsing.
  */
 
-/**
- * Builds a greeting for `name`.
- *
- * @param name - Who to greet. Surrounding whitespace is ignored.
- * @returns The greeting, for example `"Hello, Ada!"`.
- * @throws {TypeError} When `name` is empty after trimming.
- */
-export function greet(name: string): string {
-  const trimmed = name.trim();
-  if (trimmed === "") {
-    throw new TypeError("name must not be empty");
-  }
-  return `Hello, ${trimmed}!`;
-}
+export { reportingEndpoints } from "./endpoints.js";
+export { CspError, type CspErrorCode } from "./errors.js";
+export { generateNonce } from "./nonce.js";
+export {
+  type BuildCspOptions,
+  buildCsp,
+  CANONICAL_DIRECTIVES,
+  type CanonicalDirective,
+  type CspPolicy,
+  type StrictPolicyOptions,
+  strictPolicy,
+} from "./policy.js";
+export {
+  type CspViolation,
+  type ParseCspReportOptions,
+  parseCspReport,
+} from "./reports.js";

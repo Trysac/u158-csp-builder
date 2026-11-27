@@ -4,9 +4,15 @@ Content-Security-Policy headers are built by string concatenation, so a misquote
 
 ## Installation
 
-```bash
-npm install @trysac/csp-builder
+Not published to npm yet. Build it from a clone, then install it from the local path:
+
+```sh
+git clone https://github.com/Trysac/u158-csp-builder.git
+cd u158-csp-builder && npm ci && npm run build
+cd ../your-project && npm install ../u158-csp-builder
 ```
+
+Imports keep the package name: `import { ... } from "@trysac/csp-builder"`.
 
 ## Usage Example
 
